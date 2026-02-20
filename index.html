@@ -2,81 +2,7 @@
 <html>
   <head>
     <title>Chatbot</title>
-    <style>
-      body {
-        font-family: Arial;
-        margin-top: 0px;
-        margin-bottom: 0px;
-      }
-
-      .send-button {
-        background-color: rgb(25, 135, 84);
-        color: white;
-        padding: 12px 20px;
-        margin-left: 10px;
-        border: none;
-        border-radius: 10px;
-        font-size: 15px;
-        cursor: pointer;
-      }
-
-      .chat-input {
-        padding: 12px 15px;
-        border-radius: 10px;
-        border-width: 1px;
-        font-size: 15px;
-
-        flex-grow: 1;
-      }
-
-      .chat-input-container {
-        display: flex;
-        margin-bottom: 60px;
-      }
-
-      .app-container {
-        max-width: 600px;
-        margin-left: auto;
-        margin-right: auto;
-
-        height: 100vh;
-        display: flex;
-        flex-direction: column;
-      }
-
-      .chat-message-user {
-        display: flex;
-        justify-content: end;
-        align-items: start;
-      }
-
-      .chat-message-robot {
-        display: flex;
-        align-items: start;
-      }
-
-      .chat-message-text {
-        background-color: rgb(238, 238, 238);
-        padding: 15px 20px;
-        border-radius: 10px;
-        margin-right: 10px;
-        margin-left: 10px;
-        margin-bottom: 20px;
-        max-width: 300px;
-      }
-
-      .chat-message-profile {
-        width: 45px;
-      }
-
-      .chat-messages-container {
-        flex-grow: 1;
-        margin-top: 20px;
-        overflow: scroll;
-        scrollbar-width: none;
-
-      }
-    </style>
+    <link rel="stylesheet" href="style.css">
   </head>
   <body>
     <div class="js-container"></div>
@@ -107,6 +33,11 @@
           
           // We can put this at the top of the function or
           // after the first setChatMessages(). Both work.
+
+          // Clear the textbox at the top now because the Chatbot
+          // will take some time to load the response. We want
+          // to clear the textbox immediately rather waiting
+          // for the Chatbot to finish loading.
           setInputText('');
 
           const newChatMessages = [
@@ -132,9 +63,9 @@
             ...newChatMessages,
             // This creates a temporary Loading... message.
             // Because we don't save this message in newChatMessages,
-            // it will be remove later, when we add the response.
+            // it will be removed later, when we add the response.
             {
-              message: 'Loading...',
+              message: <img src="loading-spinner.gif" className="loading-spinner" />,
               sender: 'robot',
               id: crypto.randomUUID()
             }
@@ -224,15 +155,27 @@
         );
       }
 
-      function ChatMessages({ chatMessages }) {
-        const chatMessagesRef = React.useRef(null);
+      // To use a function as a hook, the function name must
+      // start with "use".
+      function useAutoScroll(dependencies) {
+        // It's highly recommend to rename this to something
+        // more generic like containerRef. This will make the
+        // code make more sense if we ever reuse this code in
+        // other components.
+        const containerRef = React.useRef(null);
 
         React.useEffect(() => {
-          const containerElem = chatMessagesRef.current;
+          const containerElem = containerRef.current;
           if (containerElem) {
             containerElem.scrollTop = containerElem.scrollHeight;
           }
-        }, [chatMessages]);
+        }, dependencies);
+
+        return containerRef;
+      }
+
+      function ChatMessages({ chatMessages }) {
+        const chatMessagesRef = useAutoScroll([chatMessages]);
 
         return (
           <div className="chat-messages-container" ref={chatMessagesRef}>
@@ -250,29 +193,18 @@
       }
 
       function App() {
-        const [chatMessages, setChatMessages] = React.useState([{
-          message: 'hello chatbot',
-          sender: 'user',
-          id: 'id1'
-        }, {
-          message: 'Hello! How can I help you?',
-          sender: 'robot',
-          id: 'id2'
-        }, {
-          message: 'can you get me todays date?',
-          sender: 'user',
-          id: 'id3'
-        }, {
-          message: 'Today is February 17',
-          sender: 'robot',
-          id: 'id4'
-        }]);
+        const [chatMessages, setChatMessages] = React.useState([]);
         // const [chatMessages, setChatMessages] = array;
         // const chatMessages = array[0];
         // const setChatMessages = array[1];
 
         return (
           <div className="app-container">
+            {chatMessages.length === 0 && (
+              <p className="welcome-message">
+                Welcome to the chatbot project! Send a message using the textbox below.
+              </p>
+            )}
             <ChatMessages
               chatMessages={chatMessages}
             />
