@@ -1,3 +1,4 @@
+import dayjs from 'dayjs';
 import { useState } from 'react'
 import { Chatbot } from 'supersimpledev';
 import LoadingSpinner from '../assets/loading-spinner.gif';
@@ -34,7 +35,8 @@ export function ChatInput({ chatMessages, setChatMessages }) {
       {
         message: inputText,
         sender: 'user',
-        id: crypto.randomUUID()
+        id: crypto.randomUUID(),
+        time: dayjs().valueOf()
       }
       // },
       // Another solution is to add the Loading... message
@@ -75,7 +77,8 @@ export function ChatInput({ chatMessages, setChatMessages }) {
       {
         message: response,
         sender: 'robot',
-        id: crypto.randomUUID()
+        id: crypto.randomUUID(),
+        time: dayjs().valueOf()
       }
     ]);
 
@@ -89,6 +92,17 @@ export function ChatInput({ chatMessages, setChatMessages }) {
     } else if (event.key === 'Escape') {
       setInputText('');
     }
+  }
+
+  function clearMessages() {
+    setChatMessages([]);
+
+    // Here, you can also run:
+    // localStorage.setItem('messages', JSON.stringify([]));
+
+    // However, because chatMessages is being updated, the
+    // useEffect in the App component will run, and it will
+    // automatically update messages in localStorage to be [].
   }
 
   return (
@@ -105,6 +119,10 @@ export function ChatInput({ chatMessages, setChatMessages }) {
         onClick={sendMessage}
         className="send-button"
       >Send</button>
+      <button
+        onClick={clearMessages}
+        className="clear-button"
+      >Clear</button>
     </div>
   );
 }
